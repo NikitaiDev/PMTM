@@ -22,7 +22,7 @@ int main() {
     printf("STM32F4 Monitor started\n");
 
     Config config;
-    if (load_config("config/monitor_config.json", &config) != 0) {
+    if (load_config("config/settings.ini", &config) != 0) {
         fprintf(stderr, "Failed to load config, exiting.\n");
         return EXIT_FAILURE;
     }
