@@ -8,6 +8,7 @@
 #include "config.h"
 #include "analyzer.h"
 #include "parser.h"
+#include "logger.h"
 
 static volatile int keep_running = 1;
 
@@ -27,11 +28,15 @@ int main() {
         return EXIT_FAILURE;
     }
 
+
+    logger_init(config.log_path);
+
     printf("Config loaded: port=%s, baudrate=115200, interval=%d sec\n",
            config.address, config.interval);
 
-    if (comm_open(config.address, 115200) != 0) {
-        fprintf(stderr, "Failed to open UART %s\n", config.address);
+    int ret = comm_open(config.address, 115200);
+    if (ret < 0) {
+        fprintf(stderr, "Failed to open UART %s; error code: %d\n", config.address, ret);
         return EXIT_FAILURE;
     }
 
@@ -39,14 +44,16 @@ int main() {
     init_statistics(&stats);
 
     while (keep_running) {
+	sleep(config.interval);
         const char *cmd = "GET\n";
-        if (comm_send(0, cmd, strlen(cmd)) < 0) {
-            fprintf(stderr, "Error sending request\n");
+	ret = comm_send(cmd, strlen(cmd));
+        if (ret < 0) {
+            fprintf(stderr, "Error sending request: %i code\n", ret);
             break;
         }
 
         char buf[256] = {0};
-        int len = comm_recv(0, buf, sizeof(buf) - 1);
+        int len = comm_recv(buf, sizeof(buf) - 1);
         if (len <= 0) {
             fprintf(stderr, "Error receiving response\n");
             break;
@@ -64,18 +71,16 @@ int main() {
         float avg_v, avg_c, avg_t;
         compute_averages(&stats, &avg_v, &avg_c, &avg_t);
 
-        printf("[DATA] V=%.2fV, C=%.2fA, T=%.2fC | avg V=%.2f, C=%.2f, T=%.2f\n",
-               data.voltage, data.current, data.temperature, avg_v, avg_c, avg_t);
+	logger_data(&data);
 
-        if (check_thresholds(&data, &config.thresholds) != 0) {
-            printf("[ALERT] Threshold exceeded! Current: %.2f, Temperature: %.2f\n",
-                   data.current, data.temperature);
-        }
+	if (check_thresholds(&data, &config.thresholds) != 0) {
+    	    logger_alert("Threshold exceeded!");
+	}
 
-        sleep(config.interval);
     }
 
     comm_close(0);
+    logger_close();
 
     printf("STM32F4 Monitor stopped\n");
     return EXIT_SUCCESS;

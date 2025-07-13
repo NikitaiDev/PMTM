@@ -10,7 +10,7 @@
 static int serial_fd = -1;
 
 int comm_open(const char *port_name, int baudrate) {
-    serial_fd = open(port_name, O_RDWR | O_NOCTTY | O_NDELAY);
+    serial_fd = open(port_name, O_RDWR);
 
     if (serial_fd == -1) {
         perror("Error opening serial port");
@@ -46,15 +46,15 @@ int comm_open(const char *port_name, int baudrate) {
     return serial_fd;
 }
 
-int comm_send(int fd, const char *data, size_t size) {
+int comm_send(const char *data, size_t size) {
     return write(serial_fd, data, size);
 }
 
-int comm_recv(int fd, char *buf, size_t size) {
+int comm_recv(char *buf, size_t size) {
     return read(serial_fd, buf, size);
 }
 
-void comm_close(int fd) {
+void comm_close() {
     if (serial_fd >= 0) {
         close(serial_fd);
         serial_fd = -1;
