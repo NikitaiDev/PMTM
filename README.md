@@ -40,7 +40,7 @@ VOLT:12.5;CURR:4.3;TEMP:55.1
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 Configuration file: `config/settings.ini` (JSON format):
 
@@ -59,7 +59,7 @@ Configuration file: `config/settings.ini` (JSON format):
 
 ---
 
-## 🚀 Build Instructions
+## Build Instructions
 
 ### Linux
 
@@ -67,7 +67,7 @@ Configuration file: `config/settings.ini` (JSON format):
 make
 ```
 
-## 🗃️ Dependencies
+## Dependencies
 
 ### Required:
 
@@ -80,13 +80,18 @@ make
 
 ```bash
 sudo apt update
-sudo apt install build-essential socat
+sudo apt install build-essential socat python3 python3-full python3-pip python3-requests python3-venv
+# For Debian; if you wish to install a non-Debian-packaged Python package
+python3 -m venv .vevn 
+source .venv/bin/activate
+pip install requests
+#
 pip3 install pyserial
 ```
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ### Virtual COM port emulation:
 
